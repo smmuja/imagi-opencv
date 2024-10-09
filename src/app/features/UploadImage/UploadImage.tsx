@@ -3,6 +3,11 @@ import React, { useEffect, useRef, useState } from "react";
 import styles from "./uploadImage.module.css";
 import Script from "next/script";
 
+import { GrPowerReset } from "react-icons/gr";
+import { MdCrop } from "react-icons/md";
+import { FaCircleHalfStroke } from "react-icons/fa6";
+import { IoMdDownload } from "react-icons/io";
+
 export function UploadImage() {
   const [opencvLoaded, setOpencvLoaded] = useState<boolean>(false);
   const [file, setFile] = useState<string | undefined>();
@@ -198,7 +203,7 @@ export function UploadImage() {
     ctx.beginPath();
     ctx.rect(x, y, width, height);
     ctx.strokeStyle = "red";
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 3;
     ctx.stroke();
   }
 
@@ -355,21 +360,22 @@ export function UploadImage() {
           <img src={file} ref={imgRef} alt="" style={{ display: "none" }} />
 
           <Button onClick={resetImage} color="orange">
-            Reset
+            Reset <GrPowerReset />
           </Button>
           <Button onClick={applyCrop} color="green">
-            Crop Image
+            Crop <MdCrop />
           </Button>
           <Button onClick={applyGrayscale} color="gray">
-            Convert to Grayscale
+            Grayscale <FaCircleHalfStroke />
           </Button>
 
           {(grayscaleImage || cropRegion) && (
             <>
               <Button color="blue">
                 <a href={editedImage} download={getAdjustedFileName(fileName)}>
-                  Download image
-                </a>
+                  Download
+                </a>{" "}
+                <IoMdDownload />
               </Button>
             </>
           )}
