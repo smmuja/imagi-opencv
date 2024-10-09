@@ -27,7 +27,7 @@ export function Button(props: ButtonProps) {
         {...rest}
         className={`${getColorClass(
           color
-        )} border border-gray-500 px-4 py-2 m-3 rounded-md`}
+        )} border border-gray-500 px-4 py-2 mx-1 my-3 rounded-md`}
       >
         {children}
       </button>
