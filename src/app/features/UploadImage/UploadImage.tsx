@@ -1,5 +1,5 @@
 import { Button } from "@/components/base";
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import styles from "./uploadImage.module.css";
 import Script from "next/script";
 
@@ -102,19 +102,36 @@ export function UploadImage() {
   const startX = useRef(0);
   const startY = useRef(0);
 
-  function startCrop(e: React.MouseEvent<HTMLCanvasElement>) {
+  function getEventCoordinates(
+    e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>
+  ) {
+    if ("touches" in e) {
+      // Touch event
+      const touch = e.touches[0];
+      return { x: touch.clientX, y: touch.clientY };
+    } else {
+      // Mouse event
+      return { x: e.clientX, y: e.clientY };
+    }
+  }
+
+  function startCrop(
+    e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>
+  ) {
     const canvas = canvasRef.current;
     const rect = canvas?.getBoundingClientRect();
 
     if (!canvas || !rect) return;
+
+    const { x: clientX, y: clientY } = getEventCoordinates(e);
 
     // Calculate the scaling factors between the canvas's CSS size and its internal size
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
 
     // Calculate the starting coordinates relative to the canvas
-    startX.current = (e.clientX - rect.left) * scaleX;
-    startY.current = (e.clientY - rect.top) * scaleY;
+    startX.current = (clientX - rect.left) * scaleX;
+    startY.current = (clientY - rect.top) * scaleY;
 
     // Set initial crop region to zero width/height
     setCropping(true);
@@ -126,18 +143,22 @@ export function UploadImage() {
     });
   }
 
-  function cropMove(e: React.MouseEvent<HTMLCanvasElement>) {
+  function cropMove(
+    e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>
+  ) {
     if (!cropping || !canvasRef.current) return;
 
     const canvas = canvasRef.current;
     const rect = canvas.getBoundingClientRect();
 
+    const { x: clientX, y: clientY } = getEventCoordinates(e);
+
     // Calculate the scaling factors
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
 
-    const currentX = (e.clientX - rect.left) * scaleX;
-    const currentY = (e.clientY - rect.top) * scaleY;
+    const currentX = (clientX - rect.left) * scaleX;
+    const currentY = (clientY - rect.top) * scaleY;
 
     // Calculate new width and height based on mouse movement
     const width = currentX - startX.current;
@@ -325,6 +346,9 @@ export function UploadImage() {
               onMouseMove={cropMove}
               onMouseUp={endCrop}
               onMouseLeave={endCrop}
+              onTouchStart={startCrop}
+              onTouchMove={cropMove}
+              onTouchEnd={endCrop}
             ></canvas>
           </div>
 
