@@ -1,0 +1,24 @@
+.canvasContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  max-width: 100%;
+  /* height: 100vh; */
+  margin: 0 auto;
+}
+
+.imageCanvas {
+  width: 70%;
+  height: auto;
+}
+
+/* Desktop */
+@media only screen and (min-width: 1028px) {
+  .imageCanvas {
+    width: auto;
+    height: 70%;
+  }
+  .canvasContainer {
+    height: 100vh;
+  }
+}
