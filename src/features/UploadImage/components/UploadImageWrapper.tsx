@@ -1,7 +1,9 @@
-import { Button } from "@/components/base";
 import React, { useEffect, useRef, useState } from "react";
-import styles from "@/features/UploadImage/styles";
 import Script from "next/script";
+
+import { Button } from "@/components/base";
+import styles from "@/features/UploadImage/styles";
+import { useApplyGrayscale, useApplyCrop } from "@/features/UploadImage/hooks";
 
 import { GrPowerReset } from "react-icons/gr";
 import { MdCrop } from "react-icons/md";
@@ -9,21 +11,11 @@ import { FaCircleHalfStroke } from "react-icons/fa6";
 import { IoMdDownload } from "react-icons/io";
 
 export function UploadImageWrapper() {
-  const [opencvLoaded, setOpencvLoaded] = useState<boolean>(false);
   const [file, setFile] = useState<string | undefined>();
   const [originalFile, setOriginalFile] = useState<string | null>();
   const [fileName, setFileName] = useState<string>("");
   const [sizeLimitError, setSizeLimitError] = useState<string | null>(null);
-  const [grayscaleImage, setGrayscaleImage] = useState<string | null>();
   const [editedImage, setEditedImage] = useState<string | undefined>();
-
-  const [cropping, setCropping] = useState(false);
-  const [cropRegion, setCropRegion] = useState<{
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-  } | null>(null);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
@@ -76,7 +68,6 @@ export function UploadImageWrapper() {
       setFileName(selectedFile.name);
       setOriginalFile(imageURL);
       setEditedImage(imageURL);
-      setGrayscaleImage(undefined);
 
       const img = imgRef.current;
       if (!img) return;
@@ -103,201 +94,24 @@ export function UploadImageWrapper() {
     return `${nameWithoutExtension}-adjusted${extension}`;
   }
 
-  // Track mouse start position
-  const startX = useRef(0);
-  const startY = useRef(0);
-
-  function getEventCoordinates(
-    e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>
-  ) {
-    if ("touches" in e) {
-      // Touch event
-      const touch = e.touches[0];
-      return { x: touch.clientX, y: touch.clientY };
-    } else {
-      // Mouse event
-      return { x: e.clientX, y: e.clientY };
-    }
-  }
-
-  function startCrop(
-    e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>
-  ) {
-    const canvas = canvasRef.current;
-    const rect = canvas?.getBoundingClientRect();
-
-    if (!canvas || !rect) return;
-
-    const { x: clientX, y: clientY } = getEventCoordinates(e);
-
-    // Calculate the scaling factors between the canvas's CSS size and its internal size
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-
-    // Calculate the starting coordinates relative to the canvas
-    startX.current = (clientX - rect.left) * scaleX;
-    startY.current = (clientY - rect.top) * scaleY;
-
-    // Set initial crop region to zero width/height
-    setCropping(true);
-    setCropRegion({
-      x: startX.current,
-      y: startY.current,
-      width: 0,
-      height: 0,
-    });
-  }
-
-  function cropMove(
-    e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>
-  ) {
-    if (!cropping || !canvasRef.current) return;
-
-    const canvas = canvasRef.current;
-    const rect = canvas.getBoundingClientRect();
-
-    const { x: clientX, y: clientY } = getEventCoordinates(e);
-
-    // Calculate the scaling factors
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-
-    const currentX = (clientX - rect.left) * scaleX;
-    const currentY = (clientY - rect.top) * scaleY;
-
-    // Calculate new width and height based on mouse movement
-    const width = currentX - startX.current;
-    const height = currentY - startY.current;
-
-    // Update crop region without causing flickering
-    setCropRegion({
-      x: startX.current,
-      y: startY.current,
-      width: Math.max(width, 0),
-      height: Math.max(height, 0),
+  const { applyGrayscale, grayscaleImage, setGrayscaleImage } =
+    useApplyGrayscale({
+      canvasRef,
+      setEditedImage,
     });
 
-    // Use requestAnimationFrame for smooth drawing
-    requestAnimationFrame(() =>
-      drawCrop(canvas, startX.current, startY.current, width, height)
-    );
-  }
-
-  function drawCrop(
-    canvas: HTMLCanvasElement,
-    x: number,
-    y: number,
-    width: number,
-    height: number
-  ) {
-    const ctx = canvas.getContext("2d");
-    const img = imgRef.current;
-
-    if (!ctx || !img) return;
-
-    // Clear the canvas and redraw the image
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-    // Draw the crop rectangle
-    ctx.beginPath();
-    ctx.rect(x, y, width, height);
-    ctx.strokeStyle = "red";
-    ctx.lineWidth = 3;
-    ctx.stroke();
-  }
-
-  function endCrop() {
-    setCropping(false);
-    // Optionally finalize the crop region
-    setCropRegion((prev) => {
-      if (prev && prev.width > 0 && prev.height > 0) {
-        return { ...prev }; // Keep valid crop region
-      }
-      return null; // Reset if invalid
-    });
-  }
-
-  function applyCrop() {
-    if (!cropRegion) return;
-
-    const canvas = canvasRef.current;
-
-    if (!canvas) {
-      console.error("Canvas is not available");
-      return;
-    }
-
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    const img = imgRef.current;
-
-    if (!img) {
-      console.error("Image is not available");
-      return;
-    }
-
-    // Clear the canvas and redraw the image WITHOUT the red crop rectangle
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-    const src = cv.imread(canvas);
-    const dst = new cv.Mat();
-
-    const rect = new cv.Rect(
-      cropRegion.x,
-      cropRegion.y,
-      cropRegion.width,
-      cropRegion.height
-    );
-    const cropped = src.roi(rect);
-
-    cv.imshow(canvas, cropped);
-
-    // Create a Blob from the cropped image
-    const croppedImageUrl = canvas.toDataURL("image/png");
-    fetch(croppedImageUrl)
-      .then((res) => res.blob())
-      .then((blob) => {
-        const croppedBlob = new Blob([blob], { type: "image/png" });
-        const url = URL.createObjectURL(croppedBlob);
-        setEditedImage(url); // Set the edited image URL for download
-      });
-
-    src.delete();
-    cropped.delete();
-    dst.delete();
-  }
-
-  function applyGrayscale() {
-    if (!opencvLoaded || !canvasRef.current) return;
-
-    const canvas = canvasRef.current;
-    const src = cv.imread(canvas);
-    const dst = new cv.Mat();
-
-    cv.cvtColor(src, dst, cv.COLOR_RGBA2GRAY);
-    cv.imshow(canvas, dst);
-
-    const grayscaleImageUrl = canvas.toDataURL("image/png");
-    setGrayscaleImage(grayscaleImageUrl);
-
-    // Create a Blob from the grayscale image URL
-    fetch(grayscaleImageUrl)
-      .then((res) => res.blob())
-      .then((blob) => {
-        const grayscaleBlob = new Blob([blob], { type: "image/png" });
-        const url = URL.createObjectURL(grayscaleBlob);
-        setEditedImage(url); // Set edited image URL for download
-      })
-      .catch((error) => {
-        console.error("Error creating Blob from grayscale image:", error);
-      });
-
-    src.delete();
-    dst.delete();
-  }
+  const {
+    applyCrop,
+    startCrop,
+    cropMove,
+    endCrop,
+    croppedImage,
+    setCroppedImage,
+  } = useApplyCrop({
+    canvasRef,
+    imgRef,
+    setEditedImage,
+  });
 
   function resetImage() {
     const img = imgRef.current;
@@ -315,10 +129,8 @@ export function UploadImageWrapper() {
       ctx.drawImage(img, 0, 0);
 
       setEditedImage(originalFile);
-
       setGrayscaleImage(null);
-
-      setCropRegion(null);
+      setCroppedImage(null);
     }
   }
 
@@ -328,7 +140,6 @@ export function UploadImageWrapper() {
         src="https://docs.opencv.org/4.x/opencv.js"
         onLoad={() => {
           console.log("OpenCV.js loaded");
-          setOpencvLoaded(true);
         }}
       />
 
@@ -369,7 +180,7 @@ export function UploadImageWrapper() {
             Grayscale <FaCircleHalfStroke />
           </Button>
 
-          {(grayscaleImage || cropRegion) && (
+          {(grayscaleImage || croppedImage) && (
             <>
               <Button color="blue">
                 <a href={editedImage} download={getAdjustedFileName(fileName)}>
