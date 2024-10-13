@@ -1,2 +1,2 @@
-export * from "./UploadImage";
-export * from "./uploadImage.module.css";
+export * from "./components";
+export * from "./styles";

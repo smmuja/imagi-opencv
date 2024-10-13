@@ -1,5 +1,5 @@
 "use client";
-import { UploadImage } from "@/features";
+import { UploadImageWrapper } from "@/features";
 
 export default function Home() {
   return (
@@ -7,7 +7,7 @@ export default function Home() {
       <header className="font-semibold text-2xl mb-4 p-4 text-blue-950">
         Welcome to Imagi OpenCV
       </header>
-      <UploadImage />
+      <UploadImageWrapper />
     </>
   );
 }
