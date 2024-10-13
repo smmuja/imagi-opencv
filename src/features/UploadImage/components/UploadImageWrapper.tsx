@@ -1,6 +1,6 @@
 import { Button } from "@/components/base";
 import React, { useEffect, useRef, useState } from "react";
-import styles from "./uploadImage.module.css";
+import styles from "@/features/UploadImage/styles";
 import Script from "next/script";
 
 import { GrPowerReset } from "react-icons/gr";
@@ -8,7 +8,7 @@ import { MdCrop } from "react-icons/md";
 import { FaCircleHalfStroke } from "react-icons/fa6";
 import { IoMdDownload } from "react-icons/io";
 
-export function UploadImage() {
+export function UploadImageWrapper() {
   const [opencvLoaded, setOpencvLoaded] = useState<boolean>(false);
   const [file, setFile] = useState<string | undefined>();
   const [originalFile, setOriginalFile] = useState<string | null>();
