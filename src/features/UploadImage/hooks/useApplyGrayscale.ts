@@ -1,4 +1,5 @@
 import { useState, RefObject } from "react";
+import cv from "@techstark/opencv-js";
 
 export type useGrayscaleProps = {
   canvasRef: RefObject<HTMLCanvasElement | null>;

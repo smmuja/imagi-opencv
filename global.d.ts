@@ -1,5 +1,9 @@
+import cv from "@techstark/opencv-js";
+
 declare global {
   interface Window {
-    cv: typeof import("mirada/dist/src/types/opencv/_types");
+    cv: typeof cv;
   }
 }
+
+window.cv = cv;

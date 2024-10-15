@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import cv from "@techstark/opencv-js";
 
 export type useApplyCropProps = {
   canvasRef: React.RefObject<HTMLCanvasElement | null>;

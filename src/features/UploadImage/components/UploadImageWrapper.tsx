@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import Script from "next/script";
+import cv from "@techstark/opencv-js";
 
 import { Button } from "@/components/base";
 import styles from "@/features/UploadImage/styles";
@@ -22,8 +22,8 @@ export function UploadImageWrapper() {
   const imgRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
-    if (window.cv) {
-      window.cv["onRuntimeInitialized"] = () => {
+    if (cv) {
+      cv["onRuntimeInitialized"] = () => {
         console.log("OpenCV.js is ready");
       };
     }
@@ -128,13 +128,6 @@ export function UploadImageWrapper() {
 
   return (
     <>
-      <Script
-        src="https://docs.opencv.org/4.x/opencv.js"
-        onLoad={() => {
-          console.log("OpenCV.js loaded");
-        }}
-      />
-
       <div className="flex flex-col items-center my-4">
         <label className="font-semibold my-4 text-2xl">
           Upload Image for editing
