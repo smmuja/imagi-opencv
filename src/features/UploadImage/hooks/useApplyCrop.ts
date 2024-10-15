@@ -1,15 +1,15 @@
 import { useRef, useState } from "react";
 import cv from "@techstark/opencv-js";
 
-export type useApplyCropProps = {
+export type useApplyCropParams = {
   canvasRef: React.RefObject<HTMLCanvasElement | null>;
   imgRef: React.RefObject<HTMLImageElement>;
 
   setEditedImage: (image: string | undefined) => void;
 };
 
-export function useApplyCrop(props: useApplyCropProps) {
-  const { setEditedImage, canvasRef, imgRef } = props;
+export function useApplyCrop(params: useApplyCropParams) {
+  const { setEditedImage, canvasRef, imgRef } = params;
 
   const [croppedImage, setCroppedImage] = useState<string | null>(null);
 

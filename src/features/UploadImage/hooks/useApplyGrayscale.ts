@@ -1,12 +1,12 @@
 import { useState, RefObject } from "react";
 import cv from "@techstark/opencv-js";
 
-export type useGrayscaleProps = {
+export type useGrayscaleParams = {
   canvasRef: RefObject<HTMLCanvasElement | null>;
   setEditedImage: (image: string | undefined) => void;
 };
-export function useApplyGrayscale(props: useGrayscaleProps) {
-  const { canvasRef, setEditedImage } = props;
+export function useApplyGrayscale(params: useGrayscaleParams) {
+  const { canvasRef, setEditedImage } = params;
   const [grayscaleImage, setGrayscaleImage] = useState<string | null>(null);
 
   function applyGrayscale() {
