@@ -116,6 +116,7 @@ export function UploadImageWrapper() {
               onTouchMove={cropMove}
               onTouchEnd={endCrop}
             ></canvas>
+            <p className="text-orange-700">*Draw a rectangle to crop image</p>
           </div>
 
           <img
