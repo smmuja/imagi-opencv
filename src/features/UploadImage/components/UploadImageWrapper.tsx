@@ -1,9 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
-import cv from "@techstark/opencv-js";
 
 import { Button } from "@/components/base";
 import styles from "@/features/UploadImage/styles";
-import { useApplyGrayscale, useApplyCrop } from "@/features/UploadImage/hooks";
+import { useImageProcessing } from "@/features/UploadImage/hooks";
 import { getAdjustedFileName } from "@/features/UploadImage/utils";
 
 import { GrPowerReset } from "react-icons/gr";
@@ -13,7 +12,6 @@ import { IoMdDownload } from "react-icons/io";
 
 export function UploadImageWrapper() {
   const [file, setFile] = useState<string | undefined>();
-  const [originalFile, setOriginalFile] = useState<string | null>();
   const [fileName, setFileName] = useState<string>("");
   const [sizeLimitError, setSizeLimitError] = useState<string | null>(null);
   const [editedImage, setEditedImage] = useState<string | undefined>();
@@ -21,17 +19,10 @@ export function UploadImageWrapper() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
 
-  useEffect(() => {
-    if (cv) {
-      cv["onRuntimeInitialized"] = () => {
-        console.log("OpenCV.js is ready");
-      };
-    }
-  }, []);
-
+  // Load image on canvas once uploaded
   useEffect(() => {
     if (file) {
-      const img = new Image();
+      const img = new window.Image();
       img.src = file;
       img.onload = () => {
         const canvas = canvasRef.current;
@@ -67,7 +58,6 @@ export function UploadImageWrapper() {
       setSizeLimitError(null);
       setFile(imageURL);
       setFileName(selectedFile.name);
-      setOriginalFile(imageURL);
       setEditedImage(imageURL);
 
       const img = imgRef.current;
@@ -86,45 +76,20 @@ export function UploadImageWrapper() {
     }
   }
 
-  const { applyGrayscale, grayscaleImage, setGrayscaleImage } =
-    useApplyGrayscale({
-      canvasRef,
-      setEditedImage,
-    });
-
   const {
     applyCrop,
     startCrop,
     cropMove,
     endCrop,
     croppedImage,
-    setCroppedImage,
-  } = useApplyCrop({
+    applyGrayscale,
+    grayscaleImage,
+    resetImage,
+  } = useImageProcessing({
     canvasRef,
     imgRef,
     setEditedImage,
   });
-
-  function resetImage() {
-    const img = imgRef.current;
-    const canvas = canvasRef.current;
-    const ctx = canvas?.getContext("2d");
-
-    if (img && canvas && ctx && originalFile) {
-      canvas.width = img.width;
-      canvas.height = img.height;
-
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      setFile(originalFile);
-
-      ctx.drawImage(img, 0, 0);
-
-      setEditedImage(originalFile);
-      setGrayscaleImage(null);
-      setCroppedImage(null);
-    }
-  }
 
   return (
     <>
@@ -153,7 +118,12 @@ export function UploadImageWrapper() {
             ></canvas>
           </div>
 
-          <img src={file} ref={imgRef} alt="" style={{ display: "none" }} />
+          <img
+            src={file}
+            ref={imgRef}
+            alt={fileName}
+            style={{ display: "none" }}
+          />
 
           <Button onClick={resetImage} color="orange">
             Reset <GrPowerReset />
