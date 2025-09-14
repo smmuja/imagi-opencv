@@ -9,6 +9,7 @@ import { GrPowerReset } from "react-icons/gr";
 import { MdCrop } from "react-icons/md";
 import { FaCircleHalfStroke } from "react-icons/fa6";
 import { IoMdDownload } from "react-icons/io";
+import { UploadImagePreview, UploadDragDrop } from "@/features";
 
 export function UploadImageWrapper() {
   const [file, setFile] = useState<string | undefined>();
@@ -97,9 +98,31 @@ export function UploadImageWrapper() {
         <label className="font-semibold my-4 text-2xl">
           Upload Image for editing
         </label>
-        <input type="file" onChange={handleChange} />
+        {!file && (
+          <>
+            <input type="file" onChange={handleChange} />
+          </>
+        )}
+
+        {file && (
+          <UploadDragDrop
+            onFileSelect={handleChange}
+            buttonLabel="Change Image"
+          />
+        )}
+        {sizeLimitError && <p className="text-red-500">{sizeLimitError}</p>}
       </div>
-      {sizeLimitError && <p className="text-red-500">{sizeLimitError}</p>}
+
+      {/* Upload Area */}
+      {!file && (
+        <div className="flex justify-center">
+          <div className="flex flex-col items-center justify-center border border-gray-300 rounded-xl p-8 bg-gray-50 w-full max-w-4xl min-h-[250px]">
+            <UploadImagePreview />
+
+            <UploadDragDrop onFileSelect={handleChange} />
+          </div>
+        </div>
+      )}
 
       {file && (
         <>
