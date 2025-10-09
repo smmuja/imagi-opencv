@@ -20,6 +20,23 @@ export function UploadImageWrapper() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
 
+  const {
+    applyCrop,
+    startCrop,
+    cropMove,
+    endCrop,
+    croppedImage,
+    applyGrayscale,
+    grayscaleImage,
+    applyPinkGreen,
+    pinkGreenImage,
+    resetImage,
+  } = useImageProcessing({
+    canvasRef,
+    imgRef,
+    setEditedImage,
+  });
+
   // Load image on canvas once uploaded
   useEffect(() => {
     if (file) {
@@ -40,8 +57,6 @@ export function UploadImageWrapper() {
   }, [file]);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    console.log(e.target.files);
-
     const selectedFile = e.target.files?.[0];
 
     if (selectedFile) {
@@ -74,23 +89,11 @@ export function UploadImageWrapper() {
           ctx.drawImage(img, 0, 0);
         }
       };
+
+      // Reset all filters when new image is uploaded (after setting the new file)
+      resetImage();
     }
   }
-
-  const {
-    applyCrop,
-    startCrop,
-    cropMove,
-    endCrop,
-    croppedImage,
-    applyGrayscale,
-    grayscaleImage,
-    resetImage,
-  } = useImageProcessing({
-    canvasRef,
-    imgRef,
-    setEditedImage,
-  });
 
   return (
     <>
@@ -98,12 +101,7 @@ export function UploadImageWrapper() {
         <label className="font-semibold my-4 text-2xl">
           Upload Image for editing
         </label>
-        {!file && (
-          <>
-            <input type="file" onChange={handleChange} />
-          </>
-        )}
-
+        {!file && <input type="file" onChange={handleChange} />}
         {file && (
           <UploadDragDrop
             onFileSelect={handleChange}
@@ -118,7 +116,6 @@ export function UploadImageWrapper() {
         <div className="flex justify-center">
           <div className="flex flex-col items-center justify-center border border-gray-300 rounded-xl p-8 bg-gray-50 w-full max-w-4xl min-h-[250px]">
             <UploadImagePreview />
-
             <UploadDragDrop onFileSelect={handleChange} />
           </div>
         </div>
@@ -158,16 +155,21 @@ export function UploadImageWrapper() {
           <Button onClick={applyGrayscale} color="gray">
             Grayscale <FaCircleHalfStroke />
           </Button>
+          <Button
+            onClick={applyPinkGreen}
+            color="pinkgreen"
+            disabled={!!pinkGreenImage}
+          >
+            Pink-Green <FaCircleHalfStroke />
+          </Button>
 
-          {(grayscaleImage || croppedImage) && (
-            <>
-              <Button color="blue">
-                <a href={editedImage} download={getAdjustedFileName(fileName)}>
-                  Download
-                </a>{" "}
-                <IoMdDownload />
-              </Button>
-            </>
+          {(grayscaleImage || croppedImage || pinkGreenImage) && (
+            <Button color="blue">
+              <a href={editedImage} download={getAdjustedFileName(fileName)}>
+                Download
+              </a>{" "}
+              <IoMdDownload />
+            </Button>
           )}
         </>
       )}

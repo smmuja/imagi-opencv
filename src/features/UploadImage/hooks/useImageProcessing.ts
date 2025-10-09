@@ -1,11 +1,14 @@
-import { useApplyCrop, useApplyGrayscale } from "@/features/UploadImage/hooks";
+import {
+  useApplyCrop,
+  useApplyGrayscale,
+  useApplyPinkGreen,
+} from "@/features/UploadImage/hooks";
 import { useEffect } from "react";
 import cv from "@techstark/opencv-js";
 
 export type useImageProcessingParams = {
   canvasRef: React.RefObject<HTMLCanvasElement | null>;
   imgRef: React.RefObject<HTMLImageElement>;
-
   setEditedImage: (image: string | undefined) => void;
 };
 
@@ -43,29 +46,46 @@ export function useImageProcessing(params: useImageProcessingParams) {
     setEditedImage,
   });
 
+  const { applyPinkGreen, pinkGreenImage, setPinkGreenImage } =
+    useApplyPinkGreen({
+      canvasRef,
+      setEditedImage,
+    });
+
   function resetImage() {
     if (img && canvas && ctx) {
       canvas.width = img.width;
       canvas.height = img.height;
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-
       ctx.drawImage(img, 0, 0);
 
       setGrayscaleImage(null);
       setCroppedImage(null);
+      setPinkGreenImage(null);
     }
   }
+
   return {
+    // Crop
     applyCrop,
     startCrop,
     cropMove,
     endCrop,
     croppedImage,
     setCroppedImage,
+
+    // Grayscale
     applyGrayscale,
     grayscaleImage,
     setGrayscaleImage,
+
+    // PinkGreen
+    applyPinkGreen,
+    pinkGreenImage,
+    setPinkGreenImage,
+
+    // Reset
     resetImage,
   };
 }
