@@ -4,12 +4,13 @@ Imagi OpenCV; image processing app with NextJS, TypeScript, and OpenCV.js
 
 ## Deployment Links
 
-- https://imagi-opencv.vercel.app
 - https://imagi-opencv.smmuja.com
 
 ## Preview
 
 ![preview](/docs/preview.png)
+
+![pink green](/docs/pink-green.png)
 
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
