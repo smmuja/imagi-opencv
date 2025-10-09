@@ -16,6 +16,8 @@ export function Button(props: ButtonProps) {
         return "bg-green-300";
       case "gray":
         return "bg-gray-300";
+      case "pinkgreen":
+        return "bg-gradient-to-r from-[#DD79AD] to-[#057B41]";
       default:
         return "bg-blue-500";
     }
